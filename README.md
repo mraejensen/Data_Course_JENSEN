@@ -1,2 +1,2 @@
-# Data_Course_JENSENThis README file contains information about my uploaded assignments
+# Data_Course_JENSEN
 This README file contains information about my uploaded assignments
