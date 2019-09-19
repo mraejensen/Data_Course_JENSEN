@@ -22,8 +22,9 @@ cat BioLog_Plate_Data.csv | cut -f 5 -d "," | sort | uniq > unique_C_substrates.
 
 5.
 cd ../../../Data_Course/Data/data_shell/data
-find . -type f -name "*.txt" -exec wc -l {} \; | sort | tail -n 1
+find . -type f -name "*.txt" -exec wc -l {} \; | sort | tail -n 2 | head -n 1
 
 6.
+cd ../many_files
 find . -type f -name "*.txt" -exec bash ../scripts/sum_lines.sh > file_sums.txt {} \;
 mv file_sums.txt ../../../../Data_Course_JENSEN/Assignments/Assignment_2/
