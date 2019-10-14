@@ -1,0 +1,6 @@
+1.
+The predicted response values are not exactly reliable, so they are likely scientifically meaningless. Since there are only a few values from each column, it is hard to predict values for all growth rates
+2.
+Most of my plots were not linear relationships. They don't quite fit the non-linear model from what most sources on the internet seem to have...
+The attached link has an example of a non-linear function, and example code showing how to work through it:
+https://dataconomy.com/2017/08/nonlinear-least-square-nonlinear-regression-r/
