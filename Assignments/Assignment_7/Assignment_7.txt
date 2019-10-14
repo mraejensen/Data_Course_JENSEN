@@ -1,0 +1,11 @@
+1.
+The religious group that correlates most strongly with the proportion of non-religious people is LDS.
+2.
+The direction of the correlation is negative
+3.
+The second strongest correlation is with the Episcopal Church, according to the R^2 value
+4.
+The direction of this correlation is positive
+5.
+For the first relationship, we can say that as the proportion of non-religious people increases in a county, the proportion of LDS people decreases.
+For the second relationship, we can say that as the proportion of non-religious people increases, the proportion of people belonging to the Episcopal Church increases.

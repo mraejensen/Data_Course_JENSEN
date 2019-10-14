@@ -1,0 +1,20 @@
+1.
+Automatically puts decimal as (.), puts first line as header, quotes
+
+2.
+read.csv2 gives values that are separated by a semicolon (;), and decimal is a comma (,)
+
+3.
+read.csv2 is likely for people that live in countries where a decimal point is a comma, and values are often separated by semicolons
+
+4.
+Use colClasses to assume classes for each column by name
+
+5.
+summary(df$Home.Value)
+
+6.
+"Home.Value"
+
+7.
+The plot is colored by region

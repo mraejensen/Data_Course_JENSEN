@@ -27,10 +27,10 @@ Downstairs_Lab <- DNA_ext[DNA_ext$Lab=="Downstairs",]
 
 Downstairs_Lab$date <- as.Date(Downstairs_Lab$Date_Collected)
 
-plot(Downstairs_Lab, x=Downstairs_Lab$Date_Collected, y=Downstairs_Lab$DNA_Concentration_Ben)
+plot(Downstairs_Lab, x=Downstairs_Lab$Date_Collected, y=Downstairs_Lab$DNA_Concentration_Ben, xlab="Date_Collected", ylab="DNA_Concentration_Ben")
 
 jpeg("Ben_DNA_Over_Time.jpeg")
-plot(Downstairs_Lab, x=Downstairs_Lab$Date_Collected, y=Downstairs_Lab$DNA_Concentration_Ben)
+plot(Downstairs_Lab, x=Downstairs_Lab$Date_Collected, y=Downstairs_Lab$DNA_Concentration_Ben, xlab="Date_Collected", ylab="DNA_Concentration_Ben")
 dev.off()
 
 

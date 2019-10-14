@@ -1,0 +1,30 @@
+1.
+cd ../Data/data-shell/data/pdb/
+find . -type f -name "m*" -exec wc -l {} \;
+
+2.
+find . -type f -name "m*" -exec wc -l > m_lines.txt  {} \;
+cd ../../../Data_Course_JENSEN/
+mkdir "Assignments"
+cd Assignments
+mkdir "Assignment_2"
+cd ../../../Data_Course/Data/data-shell/data/pdb
+mv m_lines.txt ../../../../../Data_Course_JENSEN/Assignments/Assignment_2/
+
+3.
+cd ..
+cut -f 2 -d "," animals.txt | sort |uniq > unique_animals.txt
+mv unique_animals.txt ../../../../Data_Course_JENSEN/Assignments/Assignment_2/
+
+4.
+cd ../..
+cat BioLog_Plate_Data.csv | cut -f 5 -d "," | sort | uniq > unique_C_substrates.txt | mv unique_C_substrates.txt ../../Data_Course_JENSEN/Assignments/Assignment_2
+
+5.
+cd ../../../Data_Course/Data/data_shell/data
+find . -type f -name "*.txt" -exec wc -l {} \; | sort | tail -n 2 | head -n 1
+
+6.
+cd ../many_files
+find . -type f -name "*.txt" -exec bash ../scripts/sum_lines.sh > file_sums.txt {} \;
+mv file_sums.txt ../../../../Data_Course_JENSEN/Assignments/Assignment_2/
