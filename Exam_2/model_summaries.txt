@@ -1,0 +1,41 @@
+[1] "MOD 1"
+Call:
+   aov(formula = Diversity ~ Month, data = atm)
+
+Terms:
+                    Month Residuals
+Sum of Squares    6611359 134690907
+Deg. of Freedom        11       286
+
+Residual standard error: 686.2559
+Estimated effects may be unbalanced
+[1] "MOD 2"
+Call:
+   aov(formula = Diversity ~ CO2_Concentration * Aerosol_Density, 
+    data = atm)
+
+Terms:
+                CO2_Concentration Aerosol_Density
+Sum of Squares           30891973        81537520
+Deg. of Freedom                 1               1
+                CO2_Concentration:Aerosol_Density Residuals
+Sum of Squares                           18618514  10254259
+Deg. of Freedom                                 1       294
+
+Residual standard error: 186.7577
+Estimated effects may be unbalanced
+[1] "MOD 3"
+Call:
+   aov(formula = Diversity ~ (CO2_Concentration + Aerosol_Density) * 
+    Precip, data = atm)
+
+Terms:
+                CO2_Concentration Aerosol_Density   Precip
+Sum of Squares           30891973        81537520 20635958
+Deg. of Freedom                 1               1        1
+                CO2_Concentration:Precip Aerosol_Density:Precip Residuals
+Sum of Squares                       173                  54439   8182204
+Deg. of Freedom                        1                      1       292
+
+Residual standard error: 167.3955
+Estimated effects may be unbalanced
