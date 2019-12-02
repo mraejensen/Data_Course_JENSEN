@@ -1,0 +1,158 @@
+---
+title: "Jensen Exam 3"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, include = FALSE}
+library(tidyverse)
+library(modelr)
+library(plotly)
+
+BioLog <- read.csv2("./BioLogData_Exam3.csv", sep = "|")
+BioLog$Hr_144 <- as.numeric(as.character(BioLog$Hr_144))
+BioLog$Hr_48 <- as.numeric(as.character(BioLog$Hr_48))
+BioLog$Hr_24 <- as.numeric(as.character(BioLog$Hr_24))
+```
+
+The categories in the BioLog dataset are as follows:
+
+| Column ID  |  Description                                                                              |
+|------------|-------------------------------------------------------------------------------------------|
+|  **Sample.ID** |  The location the sample was taken from. There are 2 water samples and 2 soil samples.    |
+| **Rep**        |  The experimental replicate. 3 replicates for each combination of experimental variables. |
+| **Well**       | The well number on the BioLog plate.                                                      |
+| **Dilution**   | The dilution factor of the sample.                                                        |
+| **Substrate**  | The name of the carbon source in that well.  "Water" is the negative control.                                             |
+| **Hr_24**      | The light absorbance value after 24 hours of incubation.                                  |
+| **Hr_48**      | The light absorbance value after 48 hours of incubation.                                  |
+| **Hr_144**     | The light absorbance value after 144 hours of incubation.                                 |
+
+Here is the start of the BioLog dataset as an example:
+```{r, echo = FALSE}
+head(BioLog)
+
+```
+
+___
+
+The first question we want to answer is whether the samples are fundamentally different from each other.
+
+One way to do this is by making a plot:
+
+```{r, echo = FALSE}
+ggplotly(ggplot(BioLog, aes(x=Sample.ID, y=Hr_144))+
+  geom_point())
+```
+
+Overall, they don't look very different. Let's try a facet wrap for each substrate.
+
+```{r, echo = FALSE}
+ggplot(BioLog, aes(x=Sample.ID, y=Hr_144))+
+  geom_point()+
+  facet_wrap(~Substrate)+
+  theme(axis.text.x = element_text(angle = 60, hjust = 1))
+```
+
+In the case of some substrates, the water and soil samples look very different from each other. 
+We can also look at a t test of each sample compared to the others. Let's start by subsetting the data into datasets for each sample ID.
+
+```{r}
+Clear_creek <- BioLog[BioLog$Sample.ID == "Clear_Creek", ]
+Soil1 <- BioLog[BioLog$Sample.ID == "Soil_1",]
+Soil2 <- BioLog[BioLog$Sample.ID == "Soil_2",]
+Waste_water <- BioLog[BioLog$Sample.ID == "Waste_Water",]
+```
+Next we will perform a t test on the soil samples and on the water samples, separately.
+```{r}
+t.test(Clear_creek$Hr_144, Waste_water$Hr_144)
+t.test(Soil1$Hr_144, Soil2$Hr_144)
+```
+This shows that the water samples are different from each other, while the soil samples are not.
+
+Next, let's compare the water samples to a soil sample and see how they compare.
+```{r}
+t.test(Clear_creek$Hr_144, Soil1$Hr_144)
+t.test(Waste_water$Hr_144, Soil1$Hr_144)
+```
+This shows that  both water samples are fundamentally different from the first soil sample. Let's try it with the other soil sample:
+```{r}
+t.test(Clear_creek$Hr_144, Soil2$Hr_144)
+t.test(Waste_water$Hr_144, Soil2$Hr_144)
+```
+This yields similar results to the first soil and water t test set.
+
+___
+
+Next Question: Are the soil samples significantly different from the water samples?
+
++ We also want to know if this differs when comparing per substrate
+
+A tukey test is likely the best way to compare these.
+
+For the first part, we will compare the samples to each other overall:
+
+```{r, include = FALSE}
+mod1 <- aov(data = BioLog, Hr_144 ~ Sample.ID)
+```
+```{r}
+summary(mod1)
+TukeyHSD(mod1)
+```
+
+The *summary(mod1)* command tells us there is a difference between the samples, and the *TukeyHSD(mod1)* command lets us know which samples are significantly different from each other. In this case, the soil samples are the only ones that are not significantly different from each other; when comparing two sample types against each other, all others have significant results
+
+
+
+
+This can also be illustrated with a graph:
+
+```{r}
+plot(TukeyHSD(mod1))
+```
+
+The entries with a part around 0.0 are not functionally different. There is only one entry that is centered around 0, which matches the results from the Tukey test.
+
+
+Below is the data for each individual substrate. 
+
+```{r, include=FALSE}
+X <- split(BioLog, BioLog$Substrate)
+```
+
+```{r}
+TukeyHSD(aov(X$`2-Hydroxy Benzoic Acid`$Hr_144~X$`2-Hydroxy Benzoic Acid`$Sample.ID))
+```
+This shows that the soil and water samples are fundamentally different from each other, but the two samples from each type, when compared, have similar results.
+
+
+___
+
+The next question is to determine which substrates are driving any differences between the samples.
+
+___
+
+We also want to know if the dilution factor changes the results. The first step would be to graph the data based on sample ID and see if there is a difference between the dilution factors for each 
+
+___
+
+Finally, we want to find out if the control samples show any sign of contamination. There are two ways to do this:
++ look at the absorbances of the control (in this case, the water substrate) OR
++ check the absorbances of all the substrates for negative values
+
+For the first method, we will subset the BioLog data set into just the control values, then see if there are any non-zero values by using the *unique()* function.
+
+
+For the second method, we will use logical comparisons and sum the answer to check if there are any absorbance values below zero. We will do this for all three absorbance times.
+
+
+
+
+
+
+
+
+
