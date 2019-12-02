@@ -123,32 +123,265 @@ Below is the data for each individual substrate.
 X <- split(BioLog, BioLog$Substrate)
 ```
 
+2-Hydroxy Benzoic Acid:
 ```{r}
 TukeyHSD(aov(X$`2-Hydroxy Benzoic Acid`$Hr_144~X$`2-Hydroxy Benzoic Acid`$Sample.ID))
 ```
 This shows that the soil and water samples are fundamentally different from each other, but the two samples from each type, when compared, have similar results.
+
+4-Hydroxy Benzoic Acid:
+```{r, echo = FALSE}
+TukeyHSD(aov(X$`4-Hydroxy Benzoic Acid`$Hr_144~X$`4-Hydroxy Benzoic Acid`$Sample.ID))
+
+```
+The overall results are similar to 2-Hydroxy Benzoic Acid in that the water and soil samples could be considered different from each other, but the samples for each type are not significantly different from the others of their type.
+
+D-Cellobiose:
+```{r, echo = FALSE}
+TukeyHSD(aov(X$`D-Cellobiose`$Hr_144~X$`D-Cellobiose`$Sample.ID))
+
+```
+The clear creek sample is significantly different from the soil samples, but the other samples are similar enough to each other that it is not significantly different.
+
+D-Galactonic Acid γ-Lactone:
+```{r, echo = FALSE}
+TukeyHSD(aov(X$`D-Galactonic Acid γ-Lactone`$Hr_144~X$`D-Galactonic Acid γ-Lactone`$Sample.ID))
+```
+The Soil 2 sample and the Waste water are different enough to be of merit (p < 0.05), but the others are not.
+
+D-Galacturonic Acid:
+```{r, echo =FALSE}
+TukeyHSD(aov(X$`D-Galacturonic Acid`$Hr_144~X$`D-Galacturonic Acid`$Sample.ID))
+
+```
+None of the samples are significantly different from each other in this substrate.
+
+D-Glucosaminic Acid:
+```{r, echo = FALSE}
+TukeyHSD(aov(X$`D-Glucosaminic Acid`$Hr_144~X$`D-Glucosaminic Acid`$Sample.ID))
+
+```
+the water samples are not significantly different from each other, and the same goes for the soil samples. All other comparisons are significant.
+
+
+D-Mallic Acid:
+```{r, echo = FALSE}
+TukeyHSD(aov(X$`D-Mallic Acid`$Hr_144~X$`D-Mallic Acid`$Sample.ID))
+```
+Soil 2 is significantly different from the water samples. The other samples are not functionally different.
+
+D-Mannitol:
+```{r, echo = FALSE}
+TukeyHSD(aov(X$`D-Mannitol`$Hr_144~X$`D-Mannitol`$Sample.ID))
+
+```
+Clear creek is significantly different from soil sample 1.
+
+D-Xylose:
+```{r, echo = FALSE}
+TukeyHSD(aov(X$`D-Xylose`$Hr_144~X$`D-Xylose`$Sample.ID))
+```
+Similar conclusion to 2-Hydroxy Benzoic Acid
+
+D.L -α-Glycerol Phosphate:
+```{r, echo = FALSE}
+TukeyHSD(aov(X$`D.L -α-Glycerol Phosphate`$Hr_144~X$`D.L -α-Glycerol Phosphate`$Sample.ID))
+```
+None of the results are significant.
+
+Glucose-1-Phosphate:
+```{r, echo = FALSE}
+TukeyHSD(aov(X$`Glucose-1-Phosphate`$Hr_144~X$`Glucose-1-Phosphate`$Sample.ID))
+```
+The soil_1 clear creek comparison is the only one with significant differences.
+
+Glycogen:
+```{r}
+TukeyHSD(aov(X$Glycogen$Hr_144~X$Glycogen$Sample.ID))
+```
+The comparisons between the clear creek and soil samples were significant. No others were.
+
+Glycyl-L-Glutamic Acid:
+```{r}
+TukeyHSD(aov(data = X$`Glycyl-L-Glutamic Acid`, Hr_144~Sample.ID))
+```
+Both of the soil samples compared to the clear creek were significant, as was the comparison between waste water and soil 1.
+
+i-Erythitol:
+```{r}
+TukeyHSD(aov(data = X$`i-Erythitol`, Hr_144~Sample.ID))
+```
+water to water and soil to soil comparisons were not significantly different. All others were.
+
+Itaconic Acid:
+```{r}
+TukeyHSD(aov(data = X$`Itaconic Acid`, Hr_144~Sample.ID))
+```
+This has a similar conclusion to the i-erythitol and the 2-Hydroxy Benzoic Acid.
+
+L-Arginine:
+```{r}
+TukeyHSD(aov(data = X$`L-Arginine`, Hr_144~Sample.ID))
+```
+Clear creek compared to each soil sample had significant results.
+
+L-Asparagine:
+```{r}
+TukeyHSD(aov(data = X$`L-Asparganine`, Hr_144~Sample.ID))
+```
+Similar conclusion to L-Arginine.
+
+L-Phenylalanine:
+```{r}
+TukeyHSD(aov(Hr_144~Sample.ID, data = X$`L-Phenylalanine`))
+```
+This had a similar conclusion to 2-Hydroxy Benzoic Acid.
+
+*Note: the rest of the values will not have a sentence at the end, but significant results have a p adj (p value) of less than 0.05.*
+
+L-Serine:
+```{r}
+TukeyHSD(aov(Hr_144~Sample.ID, X$`L-Serine`))
+```
+
+L-Threonine:
+```{r}
+TukeyHSD(aov(Hr_144~Sample.ID, X$`L-Threonine`))
+```
+
+N-Acetyl-D-Glucosamine:
+```{r}
+TukeyHSD(aov(Hr_144~Sample.ID, X$`N-Acetyl-D-Glucosamine`))
+```
+
+Phenylethylamine:
+```{r}
+TukeyHSD(aov(Hr_144~Sample.ID, X$Phenylethylamine))
+```
+
+Putrescine:
+```{r}
+TukeyHSD(aov(Hr_144~Sample.ID, X$Putrescine))
+```
+
+Pyruvic Acid Methyl Ester:
+```{r}
+TukeyHSD(aov(Hr_144~Sample.ID, X$`Pyruvic Acid Methyl Ester`))
+```
+
+Tween 40:
+```{r}
+TukeyHSD(aov(Hr_144~Sample.ID, X$`Tween 40`))
+```
+
+Tween 80:
+```{r}
+TukeyHSD(aov(Hr_144~Sample.ID, X$`Tween 80 `))
+```
+
+Water (control):
+```{r}
+TukeyHSD(aov(Hr_144~Sample.ID, X$Water))
+```
+
+α-Cyclodextrin:
+```{r}
+TukeyHSD(aov(Hr_144~Sample.ID, X$`α-Cyclodextrin`))
+```
+
+α-D-Lactose:
+```{r}
+TukeyHSD(aov(Hr_144~Sample.ID, X$`α-D-Lactose`))
+```
+
+α-Ketobutyric Acid:
+```{r}
+TukeyHSD(aov(Hr_144~Sample.ID, X$`α-Ketobutyric Acid`))
+```
+
+β-Methyl-D- Glucoside:
+```{r}
+TukeyHSD(aov(Hr_144~Sample.ID, X$`β-Methyl-D- Glucoside`))
+```
+
+γ-Hydroxybutyric Acid:
+```{r}
+TukeyHSD(aov(Hr_144~Sample.ID, X$`γ-Hydroxybutyric Acid`))
+```
+
+
 
 
 ___
 
 The next question is to determine which substrates are driving any differences between the samples.
 
+From the last exercise, we can conclude that most of the substrates have some influence on which direction the distribution would go in a t test or Tukey test, except for those that have a very high p-value. Those include D-Galacturonic Acid, D.L -α-Glycerol Phosphate, β-Methyl-D- Glucoside, and γ-Hydroxybutyric Acid.
+
 ___
 
-We also want to know if the dilution factor changes the results. The first step would be to graph the data based on sample ID and see if there is a difference between the dilution factors for each 
+We also want to know if the dilution factor changes the results. The first step would be to graph the data based on sample ID and see if there is a difference between the dilution factors for each sample ID.
+```{r}
+ggplotly(ggplot(BioLog, aes(x = Dilution, y=Hr_144))+
+           geom_point()+
+           facet_wrap(~Sample.ID))
+```
+We can see that there is an upward trend in the clear creek absorbance at 144 hours, but a downward trend in the soil samples. The waste water data has no clear trend.
 
+Next, we will conduct a tukey test on the samples, subsetted by the dilution factor.
++ This will help us tell if there is a difference between any dilution factors and the overall result.
+
+Here is the original tukey test for comparison:
+```{r}
+TukeyHSD(aov(BioLog$Hr_144~BioLog$Sample.ID))
+```
+
+
+```{r, include = FALSE}
+Y <- split(BioLog, BioLog$Dilution)
+```
+Dilution 0.001:
+```{r}
+TukeyHSD(aov(Y$`0.001`$Hr_144~Y$`0.001`$Sample.ID))
+```
+This data would come to a similar conclusion to the original; the soil samples are the only ones that are not significantly different from each other when compared in pairs.
+
+Dilution 0.01:
+```{r}
+TukeyHSD(aov(Y$`0.01`$Hr_144~Y$`0.01`$Sample.ID))
+```
+This distribution also has a similar conclusion. The p value comparing the waste water to clear creek, as well as the one comparing the two soil samples, have a lesser value than their respective p values in the previous dilution.
+
+Dilution 0.1:
+```{r}
+TukeyHSD(aov(Y$`0.1`$Hr_144~Y$`0.1`$Sample.ID))
+```
+In this dilution factor, none of the samples were significantly different from each other. 
+
+Because one of the dilution factors is different from the overall results, but two were the same, it is reasonable to conclude that the dilution factor could have influenced the results. If the 0.1 dilution had not been included, it would be more difficult to tell.
 ___
 
 Finally, we want to find out if the control samples show any sign of contamination. There are two ways to do this:
 + look at the absorbances of the control (in this case, the water substrate) OR
 + check the absorbances of all the substrates for negative values
 
-For the first method, we will subset the BioLog data set into just the control values, then see if there are any non-zero values by using the *unique()* function.
+For the first method, we will subset the BioLog data set into just the control values, then see if there are any non-zero values by using the *unique()* function:
+```{r}
+Control <- BioLog[BioLog$Substrate == "Water",]
+unique(as.integer(as.character(Control$Hr_24)))
+unique(as.integer(as.character(Control$Hr_48)))
+unique(as.integer(as.character(Control$Hr_144)))
+```
+All three absorbance categories had no absorbances other than zero.
 
+Since it is possible that the samples were blanked using the water substrate for each trial, we will test the entire biolog using the second method described. We will use logical comparisons and sum the answer (where TRUE is equal to 1 and FALSE is equal to 0) to check if there are any absorbance values below zero for any substrate. We will do this for all three absorbance times.
 
-For the second method, we will use logical comparisons and sum the answer to check if there are any absorbance values below zero. We will do this for all three absorbance times.
-
-
+```{r}
+sum(BioLog$Hr_144 <0)
+sum(BioLog$Hr_48 <0)
+sum(BioLog$Hr_24 <0)
+```
+The results from this part suggest that there are no negative absorbance values for any substrate. Therefore, we can conclude that there was no contamination in the control sample.
 
 
 
