@@ -16,7 +16,6 @@ library(lubridate)
 library(tidyverse)
 library(modelr)
 library(plotly)
-library(gganimate)
 ```
 
 ```{r, include = FALSE}
@@ -164,35 +163,22 @@ df_adj12$dist <- 12
 df_adj16$dist <- 16
 df_adj200$dist <- 0.2
 df_adj500$dist <- 0.5
-#dist for distance, to distinguish between datasets
 ```
 
 Since some datasets have different columns, we will combine the ones with the same columns, then fix the difference
 
 ```{r}
 adj <- bind_rows(df_adj1, df_adj2, df_adj4, df_adj6, df_adj8, df_adj10, df_adj12, df_adj16)
-
 adj2 <- bind_rows(df_adj200, df_adj500)
-
 adj <- adj[, -1]
-which(colnames(adj2)=="MQCOMP2")
 adj2 <- adj2[,-22]
-```
-
-Checking to make sure the column names are the same: 
-
-```{r}
-colnames(adj)
-colnames(adj2)
 ```
 
 Now, binding and comparing the adjusted sets:
 
 ```{r}
 adj_fin <- bind_rows(adj, adj2)
-
 adj_fin$dist <- as.factor(adj_fin$dist)
-
 sum(!(adj_fin$LID %in% df$BBA_ID))
 sum(!(df$BBA_ID %in% adj_fin$LID))
 ```
@@ -204,9 +190,7 @@ ___
 ##### Cleaning the Data
 
 ```{r, include = FALSE}
-str(df)
 df$Non.songCue.75.1 <- as.integer(as.character(df$Non.songCue.75.1))
-str(df)
 ```
 
 Since the counts do no good when determining the total counts at a certain time, we will add all the values from the count columns and place them into one column.
@@ -215,23 +199,15 @@ Since the counts do no good when determining the total counts at a certain time,
 df$TotalCounts <- rowSums(df[, -c(1, 2)], na.rm = TRUE)
 ```
 
-```{r, include = FALSE}
-saveRDS(df, file = "./Bird_counts.RDS")
-saveRDS(adj_fin, file = "./dist_adjusted_data.RDS")
-saveRDS(df_point, file = "./point_data.RDS")
-```
 
 ```{r, include = FALSE}
-df <- readRDS("./Bird_counts.RDS")
-df_point <- readRDS("./point_data.RDS")
-df_adj <- readRDS("./dist_adjusted_data.RDS")
+df_adj <- adj_fin
 ```
 
 Now, we need to rename the columns Q1 - Q15 so they make sense. Afterward, we will make the names easier to work with.
 
 ```{r}
 names(df_point) <- c("BBA_ID" , "GPS_N", "GPS_W", "Observer", "obscode", "Date", "Start", "Temp","wind_speed", "precip", "cloud_cover", "hemlock_abundance", "hemlock_health", "spruce_abundance", "spruce_qual", "understory", "deer_impact_understory", "land_use", "livestock", "nest_cav", "nest_box", "road_type", "habitat") 
-
 names(df) <- str_replace(names(df), pattern = "\\.", replacement = "_")
 names(df) <- str_replace(names(df), pattern = "X", replacement = "Trial")
 names(df) <- str_replace(names(df), pattern = "75.1", replacement = "out")
@@ -244,105 +220,28 @@ Now we need to join the point data and the bird count data with *full_join()* an
 ___
 ```{r, include = FALSE}
 df <- full_join(df, df_point, by="BBA_ID")
-
-str_replace(names(df), pattern="\\.", replacement = "_")
-str(df)
-#going to try and convert trials to "in" and "out" only
 df$In75m <- rowSums(df[, c(3,5,7,9,11,13,15)], na.rm = TRUE)
 df$Out75m <- rowSums(df[, c(4,6,8,10,12,14)], na.rm=TRUE)
-#how to account for fly-overs? maybe include in df$In75m
-#reminder: total count is also a column: TotalCounts
-
-#going to see what happens if I omit the columns with the in/out data
 df2 <- df[, -c(3:15)]
-
-which(names(df2)=="In75m")
 df2 <- df2[, c(1,2,26,27,3:25)]
-
-
-#tidying df2?
 df2 <- gather(df2, key="range_val", value = "count", 3:5)
-which(names(df2)=="range_val")
 df2 <- df2[, c(1,2, 25, 26, 3:24) ]
-
-#df for reference, still with in/out data intact; same general order as df2 otherwise
-which(names(df)=="In75m")
 df <- df[, c(1:15, 39, 40, 16:38)]
-
-str(df2)
-
-levels(df2$SP_code)
-which(df2$SP_code == "#N/A")
-#WHY IS THERE AN N/A SPECIES CODE?!
-
-saveRDS(df, file="./bird_and_point.RDS")
-saveRDS(df2, file="./bird_and_point_short.RDS")
-
-df <- readRDS("./bird_and_point.RDS")
-
-levels(df$SP_code)
-
-which(df$SP_code == "#N/A")
-
-dfNA <- df[df$SP_code == "#N/A",]
-
-#df2 <- df[-c(287594, 310599, 326870, 326871, 339483) ,]
 df2 <- df[!df$SP_code == "#N/A",]
-#ok the second one works the same way, but is MUCH shorter to type in general; will use that from now on
-
-unique(df2$Date)
-class(df2$Date)
-
-which(df2$Date == "")
-
-df2BlankDate = df2[df2$Date == "",]
-#not much other data in the blank dates
-
 df3 <- df2[!df2$Date == "" ,]
-
-#going to try conglomerating things again, getting rid of the individual trial counts, THEN get rid of NA
 df4 <- df3
 df4 <- df4[, c(1,2,16:40)]
-
 df4_cc <- df4[complete.cases(df4),]
-#just to check that complete cases worked...
-which(is.na(df4_cc))
-#awesome
-#this might be the best bet, just seeing how it works on the data... I need complete data
-
-str(df4_cc)
-levels(df4_cc$Date)
-which(df4_cc$Date == "")
-
 df4_cc$Date <- as.Date(df4_cc$Date, format = "%m/%d/%y")
 df4_cc$Start <- str_pad(df4_cc$Start, 4, pad=0)
 df4_cc$POSIX <- as.POSIXct(paste(df4_cc$Date, df4_cc$Start), format="%Y-%m-%d %H%M")
-str(df4_cc)
-#ok going to rearrange
 df4_cc <- df4_cc[c(1:11, 28, 12:27)]
-write.csv(df4_cc, file = "./clean_counts.csv")
-#AAAND just in case, i'll save it as an RDS
-saveRDS(df4_cc, file = "./clean_counts.RDS")
-```
-
-
-```{r, include = FALSE}
-count1 <- readRDS("./clean_counts.RDS")
-str(count1)
-levels(count1$SP_code)
+count1 <- df4_cc
 count1$Start <- as.integer(count1$Start)
 count1$number <- 1:nrow(count1)
-
-#month is not very helpful, so i'm changing it
 count1$month <- month(count1$Date)
-class(count1$month)
 count1$month <- month.abb[count1$month]
-class(count1$month)
-which(names(count1)=="POSIX")
-
 count1$month <- as.factor(count1$month)
-unique(count1$month)
-#yeah that isn't even in migration season... will have to find different ways to do that
 ```
 
 Here is a list of the changes made to the data:
@@ -354,7 +253,7 @@ Here is a list of the changes made to the data:
 
 Since there will be some variation between different kinds of birds, and since it is hard to put all the different species code in a facet-wrapped chart (among other things), I decided to add a species type column, using the species code and grouping them by similarity. 
 
-Note: the dataframe name changed from df to count1 in the cleaning process. Sorry if this causes any inconvenience
+*Note: the dataframe name changed from df to count1 in the cleaning process. Sorry if this causes any inconvenience*
 
 ```{r}
 count1duck <- count1[count1$SP_code %in% c("ABDU", "AMCO", "AMWI", "BUFF", "BWTE", "CAGO", "CANV", "COLO", "COME", "GADW", "GWTE", "HOME", "LESC", "MALL", "MUSW", "NOPI", "PBGR", "RBME", "RNDU", "RUDU", "TRUS", "WODU"),]
@@ -371,9 +270,9 @@ count1other <- count1[count1$SP_code %in% c("CHSW", "RTHU"),]
 count1unk <- count1[count1$SP_code %in% c("XXXX", "ZZZZ"),]
 ```
 
-When doing this, I noticed that there were about 3000 rows of data missing, so I investigated a little... turns out there were some species codes that were not in the key, which is a problem. I promptly looked up the four-letter species codes for these species and added them into their respective categories.
+When doing this, I noticed that there were about 3000 rows of data missing, so I investigated a little... turns out there were some species codes that were not in the key, which is a problem. I promptly looked up the four-letter species codes for these species and added them into their respective categories, then redid the assigning.
 
-note: Some species names were listed as two different forms of species codes, so I had to change them to the entry that was on the key.
+*note: Some species names were listed as two different forms of species codes, so I had to change them to the entry that was on the key.*
 
 ```{r}
 count1$SP_code <- as.character(count1$SP_code)
@@ -382,12 +281,7 @@ count1$SP_code[count1$SP_code == "TRFL"] <- "WIFL"
 count1$SP_code[count1$SP_code == "BDOW"] <- "BADO"
 count1$SP_code[count1$SP_code == "ESOW"] <- "EASO"
 count1$SP_code[count1$SP_code == "ECDO"] <- "EUCD"
-
 count1$SP_code <- as.factor(count1$SP_code)
-levels(count1$SP_code)
-
-#now to add the ones I missed in the right categories...
-#just going to do the whole thing since it is being stubborn
 count1duck <- count1[count1$SP_code %in% c("SNGO","ABDU", "AMCO", "AMWI", "BUFF", "BWTE", "CAGO", "CANV", "COLO", "COME", "GADW", "GWTE", "HOME", "LESC", "MALL", "MUSW", "NOPI", "PBGR", "RBME", "RNDU", "RUDU", "TRUS", "WODU"),]
 count1wade <- count1[count1$SP_code %in% c("AMBI", "BCNH", "BEKI", "CAEG", "COMO", "GBHE", "GLIB", "GREG", "GRHE", "KIRA", "LEBI", "SACR", "SNEG", "SORA", "VIRA", "WISN", "YCNH", "YEAR"),]
 count1pass <- count1[count1$SP_code %in% c("CMWA", "WCSP", "HYCH", "ACFL", "ALFL", "AMCR", "AMGO", "AMRE", "AMRO", "BANS", "BAOR", "BARS", "BAWW", "BBCU", "BCCH", "BGGN", "BHCO", "BHVI", "BLBW", "BLGR", "BLJA", "BLPW", "BOBO", "BRCR", "BRTH", "BRWA", "BTBW", "BTNW", "BWWA", "CACH", "CARW", "CAWA", "CCSP", "CEDW", "CERW", "CHSP", "CLSW", "COGR", "CORA", "COYE", "CSWA", "DEJU", "DICK", "EABL", "EAKI", "EAME", "EAPH", "EATO", "EAWP", "EUST", "FICR", "FISP", "GCFL", "GCKI", "GRCA", "GRSP", "GWWA", "HESP",  "HETH", "HOFI", "HOLA", "HOSP", "HOWA", "HOWR", "INBU", "KEWA", "LASP", "LAWA", "LEFL", "LOSH", "LOWA", "MAWA", "MAWR", "MOWA", "NAWA", "NOBO", "NOCA", "NOMO", "NOPA", "NOWA", "NRWS", "OROR", "OSFL", "OVEN", "PISI", "PIWA", "PRAW", "PROW", "PUFI", "PUMA", "RBGR", "RBNU", "RCKI", "RECR", "REVI", "RWBL", "SAVS", "SCTA", "SEWR", "SOSP", "SUTA", "SWSP", "SWTH", "SWWA", "TRES", "TUTI", "VEER", "VESP", "WAVI", "WBNU", "WEME", "WEVI", "WEWA", "WIFL", "WIWR", "WOTH", "WTSP", "WWCR", "YBCH", "YBCU", "YBFL", "YRWA", "YTVI", "YTWA", "YWAR"),]  
@@ -417,7 +311,6 @@ count1peck$species_type <- "Woodpecker"
 count1dove$species_type <- "Dove"
 count1other$species_type <- "Other"
 count1unk$species_type <- "Unknown"
-
 count2 <- rbind(count1dove, count1duck, count1game, count1goat, count1other, count1pass, count1peck, count1rapt, count1shor, count1tern, count1unk, count1wade)
 ```
 
@@ -428,68 +321,19 @@ Process:
 + omit doubles
 
 ```{r}
-sum(duplicated(count2$number))
-#8there are 88 duplicate entries
 count2 <- count2[!(duplicated(count2$number)),]
-
 ```
 
 
 ```{r, include = FALSE}
-unique(count2$wind_speed)
-#uhhh... there shouldn't be any decimals, like 2.5 is NOT an option in the key
-#do I round up or down? or omit?
-weirdwind <- count2[count2$wind_speed == 2.5 ,]
-#they all come from one observer...
-sum(count2$Observer == "BECO")
-#not all of the BECO observations have the weird numbering... in wind speed at least
-unique(count2$precip)#that one's good
-unique(count2$cloud_cover) #HECK
-unique(count2$hemlock_abundance)
-unique(count2$hemlock_health)
-unique(count2$spruce_abundance)#WHY?!
-unique(count2$spruce_qual)#I don't even know how to "round" that
-unique(count2$understory)#... really?
-unique(count2$deer_impact_understory)
-unique(count2$land_use)
-unique(count2$livestock)
-unique(count2$nest_cav)
-unique(count2$nest_box)
-unique(count2$road_type) #again with the 2.5
-unique(count2$habitat)
-
-#one thing I wonder is whether all the weird levelings come from BECO
-sum(count2$cloud_cover == 2.5) #36
-sum(count2$spruce_abundance == 0.5 | count2$spruce_abundance == 1.5) #25
-sum(count2$spruce_qual == 0.5 | count2$spruce_qual == 1.5) #33
-sum(count2$understory == 2.5) #21
-sum(count2$road_type == 2.5) #13
-
-countBECO <- count2[count2$Observer == "BECO" ,]
-sum(countBECO$cloud_cover == 2.5) #36
-#that checks out...
-sum(countBECO$spruce_abundance == 0.5 | countBECO$spruce_abundance == 1.5) #yup
-sum(countBECO$spruce_qual == 0.5 | countBECO$spruce_qual == 1.5) #uh huh
-sum(countBECO$understory == 2.5) #yet again
-sum(countBECO$road_type == 2.5) #aaand again
-#DANG IT BECO!
-#either there ARE trees or there AREN'T, there is no in between!!! gosh
-#I might have to delete those simply because they suck and it's impossible to know whether it was supposed to be a 0 or 1, etc
 count3 <- count2[!count2$cloud_cover == 2.5 ,]
-unique(count3$cloud_cover) #ok that worked
 count3 <- count3[!count3$wind_speed == 2.5 ,]
 count3 <- count3[!count3$spruce_abundance == 0.5 ,]
 count3 <- count3[!count3$spruce_abundance == 1.5 ,]
-unique(count3$spruce_abundance)
 count3 <- count3[!count3$spruce_qual == 0.5 ,]
 count3 <- count3[!count3$spruce_qual == 1.5 ,]
-unique(count3$spruce_qual)
 count3 <- count3[!count3$understory == 2.5 ,]
-unique(count3$understory)
 count3 <- count3[!count3$road_type == 2.5 ,]
-unique(count3$road_type)
-#ok NOW we can convert to factor
-
 count3$wind_speed <-  as.factor(count3$wind_speed)
 count3$precip <- as.factor(count3$precip)
 count3$cloud_cover <- as.factor(count3$cloud_cover)
@@ -505,19 +349,6 @@ count3$nest_cav <- as.factor(count3$nest_cav)
 count3$nest_box <- as.factor(count3$nest_box)
 count3$road_type <- as.factor(count3$road_type)
 count3$habitat <- as.factor(count3$habitat)
-
-str(count3)
-
-
-MaxCount2 <- count3 %>%
-  group_by(BBA_ID)%>%
-  filter(TotalCounts == max(TotalCounts))%>%
-  arrange(BBA_ID)
-
-#saving the data now...
-saveRDS(count3, file = "./bird_point_and_type.RDS")
-saveRDS(MaxCount2, file = "./bird_point_and_type_MAX.RDS")
-
 ```
 ___
 
@@ -525,8 +356,7 @@ ___
 I am going to reload the data set from a saved file; the name will be df again.
 
 ```{r, include = FALSE}
-df <- readRDS("./bird_point_and_type.RDS")
-maxdf <- readRDS("./bird_point_and_type_MAX.RDS")
+df <- count3
 ```
 
 Now, we can answer some questions about the data.
@@ -536,13 +366,9 @@ ggplotly(ggplot(df, aes(x=SP_code, y= TotalCounts))+
            geom_bar(stat = "identity")+
            theme(axis.text.x = element_text(angle = 60, hjust = 1))+
            labs(title = "Diversity By Species", x = "Species Code"))
-
-ggplotly(ggplot(df, aes(x=species_type))+
-           geom_bar()+
-           theme(axis.text.x = element_text(angle = 60, hjust = 1))+
-           labs(title = "Diversity By Type", x = "Species Type"))
-
 ```
+
+![Diversity by Type](./image1.png)
 
 For the species diversity plot, the top entries (above 10000 observations) belong to the passerine species type except for the mourning dove entry (MODO). For the type chart, the passerine type has an overwhelming majority of observations.
 
@@ -558,7 +384,6 @@ df5 <- df %>%
   select(SP_code, species_type, TotalCounts)%>%
    group_by(SP_code)%>%
   mutate(TotalCounts = sum(TotalCounts))
-
 dfTotal <- unique(df5)
 ```
 
@@ -568,24 +393,7 @@ ggplotly(ggplot(dfTotal, aes(x=SP_code, y=TotalCounts))+
            theme(axis.text.x = element_text(angle = 60, hjust = 1)))
 ```
 
-```{r, include = FALSE}
-dfType <- dfTotal %>%
-  ungroup()%>%
-  select(species_type, TotalCounts)%>%
-  group_by(species_type)%>%
-  mutate(TotalCounts = sum(TotalCounts))
-
-dfTypeFin <- unique(dfType)
-```
-
-```{r, echo = FALSE}
-ggplotly(ggplot(dfTypeFin, aes(x=species_type, y=TotalCounts))+
-           geom_bar(stat = "identity")+
-           theme(axis.text.x=element_text(angle = 60, hjust = 1))+
-           labs(Title = "Counts by Type", x= "Species Type", y= "Total Counts"))
-
-```
-
+![Counts by Species Type](./image2.png)
 
 The top three species are still the same, in order, and there is still an overwhelming majority of passerine species. The main difference is the number of observations.
 
@@ -594,22 +402,17 @@ What is the trend for birds seen dependent on time?
 df2 <- df
 df2$Start <-  str_pad(df2$Start, 4, pad = "0")
 df2$Start <- as.POSIXct(df2$Start, format = "%H%M")
-class(df2$Start)
 dfTime <- df2%>%
   select(Start, month, POSIX, Temp, TotalCounts)%>%
   group_by(Start)%>%
   mutate(TotalCounts = sum(TotalCounts))
-class(dfTime$Start)
-  
 dfTime <- unique(dfTime)
 ```
 
 ```{r, echo = FALSE}
 ggplotly(ggplot(dfTime, aes(x=Start, y=TotalCounts))+
            geom_point()+
-           labs(title = "Observations Over Time", x="Start Time (AM)", y="Bird Counts")
-           )
-
+           labs(title = "Observations Over Time", x="Start Time (AM)", y="Bird Counts"))
 ```
 
 We can see that there is an upward trend in observations from about 4:50 am to 5:45 (the graph is interactive, so tags show for each time), then a steady decrease until about 9:40, when it sharply declines.
@@ -617,38 +420,23 @@ We can see that there is an upward trend in observations from about 4:50 am to 5
 *Note: I had to change the date to the same date in order for this to work, and I just used the due date. This does NOT tell which month it is in.*
 
 Here is the graph faceted by month: 
-```{r, echo = FALSE}
-ggplotly(ggplot(dfTime, aes(x=Start, y=TotalCounts))+
-           geom_point()+
-           labs(title = "Observations Over Time", x="Start Time (AM)", y="Bird Counts")+
-           facet_wrap(~month)
-           )
-```
+![Observations by month](./image3.png)
+
 The trend is approximately the same for each month.
 
 I am curious how much the temperature changes the appearance of birds.
-```{r, echo = FALSE}
-ggplotly(ggplot(dfTime, aes(x=Start, y=TotalCounts, color = Temp))+
-           geom_point()+
-           labs(title = "Observations Over Time", x="Start Time (AM)", y="Bird Counts")+
-           facet_wrap(~month))
 
-```
+![Time observations with temperature](./image4.png)
+
 Since the most noticeable change in temperature only occurs in may, it is possible that the temperature only has marginal effect on the appearance of birds during the day.
 
 Which species happened to have the highest count during a single data collection time?
 
-```{r, echo = FALSE}
-ggplotly(ggplot(df, aes(x=species_type, y=TotalCounts))+
-    geom_boxplot()+
-    labs(title = "Counts by species type", x= "Species Type", y= "Total Count for Collection Time")+
-      theme(axis.text.x = element_text(angle = 60, hjust = 1)))
-```
+![Counts for species type (individual observation times)](./image5.png)
+
 Most of the categories have counts under 50 per collection point, but there is a point in the waterfowl category that is over 100... 
 
 ```{r}
-which(df$TotalCounts == max(df$TotalCounts))
-
 mystery <- df[df$TotalCounts == max(df$TotalCounts),]
 mystery[1, "SP_code"]
 ```
@@ -656,40 +444,23 @@ The mystery bird with over 100 counts is a mallard (MALL species code), which is
 
 I am wondering what the distribution of temperature is overall, and for each month...
 
-```{r, echo = FALSE}
-ggplotly(ggplot(df, aes(x=Temp))+
-  geom_histogram()+
-  labs(title = "Frequency of Temperature", x = "Temperature (˚C)"))
+![Distribution of temperature](./image6.png)
+![temperature by Total Counts](./image7.png)
 
-ggplotly(ggplot(df, aes(x=Temp, y=TotalCounts))+
-  geom_histogram(stat = "identity")+
-  labs(title="Temperature Frequency related to Total Counts", x = "Temperature (˚C)"))
-```
 somehow that second graph had an almost normal distribution... not sure why that works.
 
-```{r, echo = FALSE}
-ggplotly(ggplot(df, aes(x=Temp))+
-  geom_histogram()+
-  labs(title = "Frequency of Temperature", x = "Temperature (˚C)")+
-  facet_wrap(~month))
+![Temperature by month](image8.png)
+![Temperature by Counts and Month](./image9.png)
 
-ggplotly(ggplot(df, aes(x=Temp, y=TotalCounts))+
-  geom_histogram(stat = "identity")+
-  labs(title="Temperature Frequency related to Total Counts", x = "Temperature (˚C)")+
-    facet_wrap(~month))
-
-```
 It is interesting that the temperatures on the last distribution were almost normal for their individual months as well.
 
 Is there a difference in counts by month?
-```{r}
-ggplot(df, aes(x=GPS_W, y=GPS_N))+
-  geom_point()+
-  facet_wrap(~month)+
-  labs(title = "Observation Points per Month")
-```
+
+![Counts by month](./image10.png)
+
 It looks like there is more activity south in May, then a slight migration pattern through July, when there are more observations in the north than the south. 
 
+___
 
 Now for modeling... 
 
@@ -699,29 +470,20 @@ Let's try a model with most (but not all) of the factors and see how that works,
 
 ```{r}
 mod1 <- aov(data = df, TotalCounts~ month+Temp+wind_speed+precip+cloud_cover+hemlock_abundance+hemlock_health+spruce_abundance+spruce_qual+understory+deer_impact_understory+land_use+livestock+nest_cav+nest_box+road_type+habitat)
-
 dfPred <- add_predictions(df, model = mod1)
 ```
 
-```{r, echo = FALSE}
-ggplot(dfPred, aes(x=SP_code))+
-  geom_point(aes(y=TotalCounts))+
-  geom_point(aes(y=pred), color = "red")
-```
+![Model 1](./image11.png)
 
 That plot wasn't the best. Let's try another model, with just one variable to see how that works
 
 ```{r}
 mod2 <- lm(data = df, TotalCounts ~ Temp)
-
 dfPred <- add_predictions(dfPred, model = mod2, var = "pred2")
 ```
 
-```{r, echo = FALSE}
-ggplot(dfPred, aes(x=Temp))+
-  geom_point(aes(y=TotalCounts))+
-  geom_point(aes(y=pred2), color = "red")
-```
+![Model 2](image12.png)
+
 That was worse. Good to know.
 
 Next!
@@ -734,10 +496,9 @@ This summary shows that all the factors are significant, which should be good...
 
 ```{r}
 dfPred <- add_predictions(dfPred, model = mod3, var = "pred3")
-ggplot(dfPred, aes(x=Temp))+
-  geom_point(aes(y=TotalCounts))+
-  geom_point(aes(y=pred3), color = "red")
 ```
+![Model 3](image13.png)
+
 That's a little better than the previous model, but not by much.
 
 Let's try another one and see if it is any better, this one by temperature, type, and habitat: 
@@ -746,14 +507,9 @@ mod4 <- aov(data = df, TotalCounts ~ Temp+species_type+habitat)
 summary(mod4)
 ```
 This says all the factors are significant, so that should mean something, but I don't think it will change anything.
-```{r, echo = FALSE}
-dfPred <- add_predictions(dfPred, mod4, var = "pred4")
 
-ggplot(dfPred, aes(x=Temp))+
-  geom_point(aes(y=TotalCounts))+
-  geom_point(aes(y=pred4), color = "red")
-#better...ish
-```
+![Model 4](./image14.png)
+
 That's marginally better...
 
 For one last try, I will try several of the factors that would likely influence the outcome the most (maybe), we will see if it works. If not, I will move to modeling something else.
@@ -761,32 +517,20 @@ For one last try, I will try several of the factors that would likely influence 
 mod5 <- aov(data = df, TotalCounts~Temp+month+Start+species_type+habitat+GPS_N+GPS_W)
 ```
 
-```{r, echo = FALSE}
-dfPred <- add_predictions(dfPred, model = mod5, var = "pred5")
+![Model 5](./image15.png)
 
-ggplot(dfPred, aes(x=Temp))+
-  geom_point(aes(y=TotalCounts))+
-  geom_point(aes(y=pred5), color = "red")
-#not much different from when we just had temperature and species type, honestly
-```
-That isn't super great either. It is possible that this particular set 
-
+That isn't super great either. It is possible that this particular set is too random to predict.
 
 Maybe if the subsetted data from the time curve is used (with species type totals instead of observation ID totals), then we can determine some factors; there seems to be a strong correlation between counts and time of day.
 ```{r}
 mod6 <- aov(dfTime, formula = TotalCounts ~Start)
-dftimeP <- add_predictions(dfTime, model = mod6, var = "pred6")
 ```
 
-```{r, echo = FALSE}
-ggplot(dftimeP, aes(x=Start))+
-  geom_point(aes(y=TotalCounts))+
-  geom_point(aes(y=pred6), color = "red")
-```
+![Model 6](./image16.png)
 
 Trying to train and test the model now, since it works better than the other ones...
 
-```{r}
+```{r, include = FALSE}
 library(caret)
 ```
 
@@ -794,15 +538,11 @@ library(caret)
 trainingsamples <- createDataPartition(dfTime$TotalCounts,p=0.5,list=FALSE)
 train <- dfTime[trainingsamples,]
 test <- dfTime[-trainingsamples,]
-
 mod7 <- aov(data = train,TotalCounts~Start)
 dftest <- add_predictions(test,mod7)
 ```
 
-```{r, echo = FALSE}
-ggplot(dftest, aes(x=Start))+
-  geom_point(aes(y=TotalCounts))+
-  geom_point(aes(y=pred), color = "red")
-```
+![Trained and Tested Model](./image17.png)
+
 It still doesn't quite follow the trend of data, but it follows the same general line as the previous model.
 
